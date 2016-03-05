@@ -1,7 +1,9 @@
 <?php
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST')
-{
+require_once('config.php');
+require_once('functions.php');
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $password = $_POST['password'];
 
@@ -16,6 +18,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
         $errors[] = 'パスワードが未入力です';
     }
 
+    // バリデーション突破後
+    if (empty($errors)) {
+        $dbh = connectDatabase();
+
+        $sql = "insert into users (name, password, created_at) values
+                (:name, :password, now());";
+        $stmt = $dbh->prepare($sql);
+
+        $stmt->bindParam(":name", $name);
+        $stmt->bindParam(":password", $password);
+
+        $stmt->execute();
+
+        header('Location: login.php');
+        exit;
+    }
 }
 
 ?>
