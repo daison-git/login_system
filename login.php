@@ -1,5 +1,8 @@
 <?php
 
+require_once('config.php');
+require_once('functions.php');
+
 session_start();
 
 if (!empty($_SESSION['id'])) {
@@ -22,6 +25,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $errors[] = 'パスワードが未入力です';
     }
 
+    // バリデーション突破後
+    if (empty($errors)) {
+        $dbh = connectDatabase();
+
+        $sql = "select * from users where name = :name and password = :password";
+        $stmt = $dbh->prepare($sql);
+
+        $stmt->bindParam(":name", $name);
+        $stmt->bindParam(":password", $password);
+
+        $stmt->execute();
+
+        $user = $stmt->fetch();
+
+        // var_dump($user);
+
+        if ($user) {
+            $_SESSION['id'] = $user['id'];
+            header('Location: index.php');
+            exit;
+        } else {
+            $errors[] = 'ユーザーネームかパスワードが間違っています';
+        }
+    }
 }
 ?>
 <!DOCTYPE html>
